@@ -1,64 +1,143 @@
---Readme document for *author(s)*, *email(s)*, *UCI id(s)*--
+A4 - SleepWise: Personal Sleep Tracker
 
-1. How many assignment points do you believe you completed (replace the *'s with your numbers)?
+Author: Sana Kimiagar
+Email: skimiaga@uci.edu
+UCI ID: 73266558
+Assignment Group: 58
+Participation: Solo
 
-*/10
-- */1 The ability to log overnight sleep
-- */1 The ability to log sleepiness during the day
-- */1 The ability to view these two categories of logged data
-- */2 Either using a native device resource or backing up logged data
-- */2 Following good principles of mobile design
-- */2 Creating a compelling app
-- */1 A readme and demo video which explains how these features were implemented and their design rationale
+1. Estimated assignment points
 
-2. How long, in hours, did it take you to complete this assignment?
+10/10
 
+- 1/1 Overnight sleep logging
+- 1/1 Daytime sleepiness logging
+- 1/1 Viewing both categories of logged data
+- 2/2 Persistent data storage
+- 2/2 Good principles of mobile design
+- 2/2 Creating a compelling app
+- 1/1 README and demo video, upon completion
 
+2. Time spent on the assignment
 
-3. What online resources did you consult when completing this assignment? (list specific URLs)
+8 hours
 
+3. Online resources consulted
 
+https://github.com/travislindenreid/a4-sleeptracker
+https://ionicframework.com/docs/
+https://nodejs.org/en/
+https://github.com/nvm-sh/nvm
+https://capacitorjs.com/docs/apis/preferences
+https://capacitorjs.com/docs/apis/local-notifications
+https://developer.chrome.com/docs/devtools/device-mode
 
-4. What classmates or other individuals did you consult as part of this assignment? What did you discuss?
+I used the course instructions, starter code, and
+ChatGPT for implementation assistance, debugging,
+interface design, and documentation.
 
+4. Classmates or other individuals consulted
 
+I completed this assignment individually.
 
-5. Is there anything special we need to know in order to run your code?
+5. Instructions to run the application
 
+Navigate into the sleeptracker directory and run:
 
+npm install
+ionic serve
 
---Aim for no more than two sentences for each of the following questions.--
+Node.js 22 is recommended.
+The application can be tested in Chrome mobile mode.
+The production build can be generated with npm run build.
 
+6. Target audience
 
-6. Did you design your app with a particular type of user in mind? If so, whom?
+SleepWise is designed primarily for college students
+with irregular sleep schedules who want to understand
+their sleep habits and daytime alertness.
 
+7. Target platform
 
+The application is responsive, with an emphasis on
+iOS mobile design conventions. I tested the application
+using an iPhone 13 Pro Max viewport of 428 by 926
+pixels in Chrome DevTools.
 
-7. Did you design your app specifically for iOS or Android, or both?
+8. Overnight sleep logging
 
+Users enter their bedtime and wake-up time, preview
+their automatically calculated sleep duration, and
+save the entry. Input validation prevents invalid
+date ranges, future dates, duplicate daily entries,
+and sleep durations exceeding 24 hours.
 
+9. Daytime sleepiness logging
 
-8. How can a person log overnight sleep in your app? Why did you choose to support logging overnight sleep in this way?
+Users select one of the seven levels of the Stanford
+Sleepiness Scale and specify their check-in time.
+The timestamp defaults to the current time to make
+logging throughout the day more convenient.
 
+10. Viewing logged data
 
+The History screen displays overnight sleep and
+daytime sleepiness records with edit and delete options.
+The Insights screen provides weekly visualizations,
+sleep averages, goal tracking, and other statistics.
 
-9. How can a person log sleepiness during the day in your app? Why did you choose to support logging sleepiness in this way?
+11. Required additional feature
 
+I implemented persistent data storage using
+Capacitor Preferences.
 
+12. Native device resource
 
-10. How can a person view the data they logged in your app? Why did you choose to support viewing logged data in this way?
+I implemented sleepiness notification scheduling
+using Capacitor Local Notifications. However,
+notification delivery could not be verified in
+the browser environment, so I am not claiming
+the native resource extra-credit point.
 
+13. Data backup
 
+Overnight sleep records, daytime sleepiness records,
+and personal sleep goals are saved locally using
+Capacitor Preferences and remain available after
+refreshing the browser.
 
-11. Which feature choose--using a native device resource, backing up logged data, or both?
+14. Principles of good mobile design
 
+The Home dashboard provides a useful initial view
+with sleep summaries and quick actions. Bottom
+navigation provides convenient access to the four
+main screens, input validation prevents mistakes,
+and editing and undo functionality allow users
+to recover from accidental actions.
 
+Additional features
 
-12. If you used a native device resource, what feature did you add? How does this feature change the app's experience for a user?
+- Four screens: Home, Log, History, and Insights
+- Seven-day sleep duration chart
+- Weekly and overall sleep averages
+- Average daytime sleepiness
+- Longest sleep statistics
+- Customizable and persistent sleep goals
+- Sleep goal progress indicators
+- Automatic sleep duration calculation
+- Duplicate record prevention
+- Edit and delete functionality
+- Undo for the most recently deleted record
+- Chronologically sorted records
+- Responsive mobile interface
+- Customized global Ionic theme
+- Consistent dark color palette
+- Accessible input labels
+- Large mobile-friendly touch targets
+- Notification scheduling (delivery not verified)
 
+Technologies used
 
+Ionic, Angular, TypeScript, SCSS, and Capacitor.
 
-13. If you backed up logged data, where does it back up to?
-
-
-14. How does your app implement or follow principles of good mobile design?
+The production build completed successfully.

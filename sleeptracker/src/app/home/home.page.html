@@ -1,20 +1,486 @@
-<ion-header [translucent]="true">
+
+<ion-header>
   <ion-toolbar>
-    <ion-title>
-      Blank
-    </ion-title>
+    <ion-title>☾ SleepWise</ion-title>
   </ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Blank</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <main class="dashboard">
 
-  <div id="container">
-    <strong>Ready to create an app?</strong>
-    <p>Start with Ionic <a target="_blank" rel="noopener noreferrer" href="https://ionicframework.com/docs/components">UI Components</a></p>
-  </div>
+    <!-- HOME SCREEN -->
+    <section *ngIf="activeTab === 'home'">
+
+      <p class="eyebrow">YOUR DAILY OVERVIEW</p>
+      <h1>Rest better. Live better.</h1>
+      <p>Understand your sleep, one day at a time.</p>
+
+      <ion-card class="summary">
+        <ion-card-content>
+          <p>Most recent sleep entry</p>
+
+          <h1>{{ sleepRecords.length
+            ? formatDuration(sleepRecords[0].duration)
+            : 'No sleep logged' }}</h1>
+
+          <div *ngIf="sleepRecords.length">
+            <p>
+              {{ sleepRecords[0].start | date:'shortTime' }}
+              –
+              {{ sleepRecords[0].end | date:'shortTime' }}
+            </p>
+
+            <div class="progress-track">
+              <div class="progress-fill"
+                   [style.width.%]="goalProgress">
+              </div>
+            </div>
+
+            <p class="goal-text">
+              {{ goalProgress >= 100
+                ? 'Daily sleep goal reached!'
+                : 'Your daily goal: ' + sleepGoal + ' hours' }}
+            </p>
+          </div>
+        </ion-card-content>
+      </ion-card>
+
+      <h2>Quick actions</h2>
+
+      <div class="quick-actions">
+        <button class="action-card"
+                (click)="openLog('sleep')">
+          <span class="action-icon">🌙</span>
+          <strong>Log sleep</strong>
+          <small>Record your night</small>
+        </button>
+
+        <button class="action-card"
+                (click)="openLog('sleepiness')">
+          <span class="action-icon">☀️</span>
+          <strong>Sleepiness</strong>
+          <small>Daily check-in</small>
+        </button>
+      </div>
+
+      <ion-card>
+        <ion-card-content>
+          <p>Latest sleepiness check-in</p>
+
+          <div *ngIf="sleepinessRecords.length; else noCheckIn">
+            <h1>{{ sleepinessRecords[0].level }} / 7</h1>
+            <p>{{ scale[sleepinessRecords[0].level - 1] }}</p>
+          </div>
+
+          <ng-template #noCheckIn>
+            <h2>No check-ins yet</h2>
+            <p>Log how you feel throughout the day.</p>
+          </ng-template>
+        </ion-card-content>
+      </ion-card>
+
+      
+<ion-card class="reminder-card">
+  <ion-card-content>
+    <h2>🔔 Sleepiness reminder</h2>
+    <p>Schedule your next daily check-in.</p>
+
+    <label for="reminderTime">Remind me in</label>
+
+    <select id="reminderTime"
+            [(ngModel)]="reminderMinutes">
+      <option [ngValue]="1">1 minute</option>
+      <option [ngValue]="15">15 minutes</option>
+      <option [ngValue]="30">30 minutes</option>
+      <option [ngValue]="60">1 hour</option>
+      <option [ngValue]="120">2 hours</option>
+    </select>
+
+    <ion-button expand="block"
+                (click)="scheduleReminder()">
+      Set Reminder
+    </ion-button>
+
+    <p class="message" role="status">
+      {{ reminderMessage }}
+    </p>
+  </ion-card-content>
+</ion-card>
+
+<ion-button expand="block" fill="outline"
+                  (click)="navigate('history')">
+        View sleep history
+      </ion-button>
+
+    </section>
+
+    <!-- LOG SCREEN -->
+    <section *ngIf="activeTab === 'log'">
+
+      <p class="eyebrow">DAILY JOURNAL</p>
+      <h1>Log your sleep</h1>
+      <p>Take a moment to check in with yourself.</p>
+
+      <div class="switcher">
+        <button [class.active]="logType === 'sleep'"
+                [attr.aria-pressed]="logType === 'sleep'"
+                (click)="logType = 'sleep'; message = ''">
+          Overnight
+        </button>
+
+        <button [class.active]="logType === 'sleepiness'"
+                [attr.aria-pressed]="logType === 'sleepiness'"
+                (click)="logType = 'sleepiness'; message = ''">
+          Sleepiness
+        </button>
+      </div>
+
+      <ion-card *ngIf="logType === 'sleep'">
+        <ion-card-content>
+          <h2>🌙 Overnight sleep</h2>
+
+          <label for="bedtime">Bedtime</label>
+          <input id="bedtime" type="datetime-local"
+                 [(ngModel)]="bedtime">
+
+          <label for="wakeTime">Wake-up time</label>
+          <input id="wakeTime" type="datetime-local"
+                 [(ngModel)]="wakeTime">
+
+          <div class="duration-preview"
+               *ngIf="previewDuration > 0">
+            <p>Total sleep duration</p>
+            <h1>{{ formatDuration(previewDuration) }}</h1>
+          </div>
+
+          <ion-button expand="block"
+                      [disabled]="!ready || saving"
+                      (click)="logSleep()">
+            Save Sleep
+          </ion-button>
+        </ion-card-content>
+      </ion-card>
+
+      <ion-card *ngIf="logType === 'sleepiness'">
+        <ion-card-content>
+
+          <h2>☀️ How sleepy do you feel?</h2>
+          <p>Stanford Sleepiness Scale</p>
+
+          <label for="sleepinessTime">Date and time</label>
+          <input id="sleepinessTime" type="datetime-local"
+                 [(ngModel)]="sleepinessTime">
+
+          <div *ngFor="let description of scale; let i = index">
+            <button class="scale-option"
+                    [class.selected]="sleepinessLevel === i + 1"
+                    [attr.aria-pressed]="sleepinessLevel === i + 1"
+                    (click)="sleepinessLevel = i + 1">
+              <strong>{{ i + 1 }}</strong>
+              {{ description }}
+            </button>
+          </div>
+
+          <ion-button expand="block"
+                      [disabled]="!ready || saving"
+                      (click)="logSleepiness()">
+            Save Sleepiness
+          </ion-button>
+
+        </ion-card-content>
+      </ion-card>
+
+      <p class="message" role="status">{{ message }}</p>
+
+    </section>
+
+    <!-- HISTORY SCREEN -->
+    <section *ngIf="activeTab === 'history'">
+
+      <p class="eyebrow">YOUR SLEEP JOURNAL</p>
+      <h1>History</h1>
+
+<p class="message" role="status">{{ message }}</p>
+
+<div class="undo-banner" *ngIf="deletedRecord">
+  <span>You can restore your last deleted record.</span>
+
+  <button [disabled]="saving"
+          (click)="undoDelete()">
+    Undo
+  </button>
+</div>
+
+      <p>Review your previous sleep and sleepiness logs.</p>
+
+      <h2>Overnight sleep</h2>
+
+      <p *ngIf="!sleepRecords.length">
+        No overnight sleep recorded yet.
+      </p>
+
+      <ion-card *ngFor="let record of sleepRecords">
+        <ion-card-content>
+          <p>🌙 {{ record.end | date:'fullDate' }}</p>
+          <h1>{{ formatDuration(record.duration) }}</h1>
+          <p>Bedtime: {{ record.start | date:'medium' }}</p>
+          <p>Wake-up: {{ record.end | date:'medium' }}</p>
+
+<div class="record-actions">
+  <button class="edit-button"
+          [disabled]="saving"
+          (click)="editSleep(record)">
+    Edit
+  </button>
+
+  <button class="delete-button"
+          [disabled]="saving"
+          (click)="deleteSleep(record)">
+    Delete
+  </button>
+</div>
+
+        </ion-card-content>
+      </ion-card>
+
+      <h2>Daytime sleepiness</h2>
+
+      <p *ngIf="!sleepinessRecords.length">
+        No sleepiness recorded yet.
+      </p>
+
+      <ion-card *ngFor="let record of sleepinessRecords">
+        <ion-card-content>
+          <p>☀️ {{ record.time | date:'medium' }}</p>
+          <h2>Level {{ record.level }} / 7</h2>
+          <p>{{ scale[record.level - 1] }}</p>
+
+<div class="record-actions">
+  <button class="edit-button"
+          [disabled]="saving"
+          (click)="editSleepiness(record)">
+    Edit
+  </button>
+
+  <button class="delete-button"
+          [disabled]="saving"
+          (click)="deleteSleepiness(record)">
+    Delete
+  </button>
+</div>
+
+        </ion-card-content>
+      </ion-card>
+
+    </section>
+
+    <!-- INSIGHTS SCREEN -->
+    <section *ngIf="activeTab === 'insights'">
+
+      <p class="eyebrow">UNDERSTAND YOUR PATTERNS</p>
+      <h1>Sleep insights</h1>
+
+<ion-card>
+  <ion-card-content>
+    <h2>🎯 Your sleep goal</h2>
+    <label for="sleepGoal">Hours per night</label>
+    <input id="sleepGoal" type="number"
+           min="4" max="12" step="0.5"
+           [(ngModel)]="goalDraft">
+    <ion-button expand="block"
+                [disabled]="saving || !ready"
+                (click)="saveGoal()">
+      Save Goal
+    </ion-button>
+    <p class="message" role="status">{{ message }}</p>
+  </ion-card-content>
+</ion-card>
+
+
+<ion-card class="weekly-card">
+  <ion-card-content>
+
+    <p>Weekly average</p>
+
+    <h1 class="highlight">
+      {{ weeklyAverage
+        ? formatDuration(weeklyAverage)
+        : 'No data yet' }}
+    </h1>
+
+    <h2>Last 7 days</h2>
+
+    <div class="weekly-chart">
+
+      <div class="goal-line"
+           [style.bottom.%]="sleepGoal * 60
+             / weeklyChartMax * 100">
+        <span>Goal</span>
+      </div>
+
+      <div class="chart-column"
+           *ngFor="let day of weeklySleep">
+
+        <div class="bar-area">
+          <div class="weekly-bar"
+               [class.goal-met]="day.duration >= sleepGoal * 60"
+               [class.no-data]="!day.logged"
+               [style.height.%]="day.logged
+                 ? day.duration / weeklyChartMax * 100
+                 : 2"
+               [attr.aria-label]="day.date + ': ' +
+                 (day.logged
+                   ? formatDuration(day.duration)
+                   : 'No entry')">
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="chart-days">
+      <span *ngFor="let day of weeklySleep">
+        {{ day.day }}
+      </span>
+    </div>
+
+    <div class="chart-days chart-values">
+      <span *ngFor="let day of weeklySleep">
+        {{ day.logged
+          ? formatDuration(day.duration)
+          : '—' }}
+      </span>
+    </div>
+
+    <div class="chart-legend">
+      <span>
+        <i class="legend-dot reached"></i>
+        Goal reached
+      </span>
+
+      <span>
+        <i class="legend-dot below"></i>
+        Below goal
+      </span>
+    </div>
+
+  </ion-card-content>
+</ion-card>
+
+<div class="stats-grid">
+
+  <ion-card>
+    <ion-card-content>
+      <p>Goal achieved</p>
+      <h1>{{ weeklyGoalCount }} / 7</h1>
+      <p>Nights this week</p>
+    </ion-card-content>
+  </ion-card>
+
+  <ion-card>
+    <ion-card-content>
+      <p>Longest sleep</p>
+      <h1>{{ longestSleep
+        ? formatDuration(longestSleep)
+        : '—' }}</h1>
+      <p>This week</p>
+    </ion-card-content>
+  </ion-card>
+
+</div>
+
+      <p>Discover trends in your daily sleep habits.</p>
+
+      <ion-card class="summary">
+        <ion-card-content>
+          <p>Average sleep duration</p>
+          <h1>{{ sleepRecords.length
+            ? formatDuration(averageSleep)
+            : '—' }}</h1>
+          <p>Based on {{ sleepRecords.length }} overnight logs</p>
+        </ion-card-content>
+      </ion-card>
+
+      <div class="stats-grid">
+        <ion-card>
+          <ion-card-content>
+            <p>Nights logged</p>
+            <h1>{{ sleepRecords.length }}</h1>
+          </ion-card-content>
+        </ion-card>
+
+        <ion-card>
+          <ion-card-content>
+            <p>Average sleepiness</p>
+            <h1>{{ averageSleepiness }}</h1>
+            <p>Scale of 1–7</p>
+          </ion-card-content>
+        </ion-card>
+      </div>
+
+      <ion-card>
+        <ion-card-content>
+          <h2>Recent sleep durations</h2>
+
+          <p *ngIf="!sleepRecords.length">
+            Log your sleep to see your progress.
+          </p>
+
+          <div class="chart-row"
+               *ngFor="let record of sleepRecords.slice(0, 7)">
+            <div class="chart-label">
+              <span>{{ record.end | date:'MMM d' }}</span>
+              <strong>{{ formatDuration(record.duration) }}</strong>
+            </div>
+
+            <div class="progress-track">
+              <div class="progress-fill"
+                   [style.width.%]="record.duration >= 720
+                     ? 100 : record.duration / 720 * 100">
+              </div>
+            </div>
+          </div>
+
+          <p *ngIf="sleepRecords.length">
+            Each full bar represents 12 hours.
+          </p>
+        </ion-card-content>
+      </ion-card>
+
+    </section>
+
+  </main>
 </ion-content>
+
+<!-- BOTTOM NAVIGATION -->
+<nav class="bottom-nav" aria-label="Main navigation">
+
+  <button [class.active]="activeTab === 'home'"
+          [attr.aria-current]="activeTab === 'home' ? 'page' : null"
+          (click)="navigate('home')">
+    <span class="nav-icon" aria-hidden="true">⌂</span>
+    <span>Home</span>
+  </button>
+
+  <button [class.active]="activeTab === 'log'"
+          [attr.aria-current]="activeTab === 'log' ? 'page' : null"
+          (click)="navigate('log')">
+    <span class="nav-icon" aria-hidden="true">⊕</span>
+    <span>Log</span>
+  </button>
+
+  <button [class.active]="activeTab === 'history'"
+          [attr.aria-current]="activeTab === 'history' ? 'page' : null"
+          (click)="navigate('history')">
+    <span class="nav-icon" aria-hidden="true">◷</span>
+    <span>History</span>
+  </button>
+
+  <button [class.active]="activeTab === 'insights'"
+          [attr.aria-current]="activeTab === 'insights' ? 'page' : null"
+          (click)="navigate('insights')">
+    <span class="nav-icon" aria-hidden="true">▥</span>
+    <span>Insights</span>
+  </button>
+
+</nav>
